@@ -1,0 +1,18 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: finance-postgres
+
+    environment:
+      POSTGRES_DB: finance_dashboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
