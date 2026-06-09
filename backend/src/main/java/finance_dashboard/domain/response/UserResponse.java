@@ -5,18 +5,20 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Getter
 @Builder
 public class UserResponse {
 
-    private Long id;
+    private UUID id;
 
     private String name;
 
     private String email;
 
-    private List<RoleResponse> roles;
+    private Set<String> roles;
 
     private LocalDateTime createdAt;
 }
