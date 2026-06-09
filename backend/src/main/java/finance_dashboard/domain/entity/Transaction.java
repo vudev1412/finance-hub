@@ -1,5 +1,6 @@
 package finance_dashboard.domain.entity;
 
+import finance_dashboard.domain.entity.enums.TransactionType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +9,10 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@Table(name = "transactions")
+@Table(name = "transactions", indexes = {
+        @Index(name = "idx_transaction_user_id", columnList = "user_id"),
+        @Index(name = "idx_transaction_date", columnList = "transactionDate")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,6 +31,10 @@ public class Transaction {
     private BigDecimal amount;
 
     private String note;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TransactionType type;
 
     private LocalDate transactionDate;
 
