@@ -9,7 +9,7 @@ public class ResponseUtil {
             T data
     ) {
         return ApiResponse.<T>builder()
-                .statusCode(statusCode)
+                .status(statusCode)
                 .message(message)
                 .data(data)
                 .build();
