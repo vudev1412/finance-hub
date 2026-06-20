@@ -102,13 +102,9 @@ public class AuthController {
     // ── Helper ────────────────────────────────────────────────
 
     private ResponseCookie buildRefreshTokenCookie(AuthResponse authResponse) {
-        // Lấy refresh token từ DB (mới nhất của user vừa login)
-        User user = userRepository.findByEmail(authResponse.getUser().getEmail())
-                .orElseThrow();
-        String refreshToken = authService
-                .extractRefreshTokenString(authResponse, user);
 
-        return ResponseCookie.from("refresh_token", refreshToken)
+
+        return ResponseCookie.from("refresh_token", authResponse.getRefreshToken())
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("None")

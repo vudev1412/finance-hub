@@ -1,5 +1,6 @@
 package finance_dashboard.util;
 
+import finance_dashboard.domain.entity.Permission;
 import finance_dashboard.domain.entity.User;
 import finance_dashboard.domain.response.AuthResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,16 +35,23 @@ public class SecurityUtil {
         Instant now = Instant.now();
         Instant validity = now.plus(accessTokenExpiration, ChronoUnit.SECONDS);
 
-        List<String> roles = user.getRoles().stream()
-                .map(role -> role.getName())
-                .collect(Collectors.toList());
+        Set<String> authorities = user.getRoles().stream()
+                .flatMap(role -> {
+                    var perms = role.getPermissions().stream()
+                            .map(Permission::getName); // VD: USER_READ
+                    return java.util.stream.Stream.concat(
+                            java.util.stream.Stream.of(role.getName()), // VD: ROLE_ADMIN
+                            perms
+                    );
+                })
+                .collect(Collectors.toSet());
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
                 .subject(email)
                 .claim("userId", user.getId().toString())
-                .claim("roles", roles)
+                .claim("authorities", authorities)   // đổi tên claim
                 .build();
 
         return jwtEncoder
