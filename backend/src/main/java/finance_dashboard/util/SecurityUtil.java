@@ -3,8 +3,12 @@ package finance_dashboard.util;
 import finance_dashboard.domain.entity.Permission;
 import finance_dashboard.domain.entity.User;
 import finance_dashboard.domain.response.AuthResponse;
+import finance_dashboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
@@ -22,6 +26,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SecurityUtil {
     private final JwtEncoder jwtEncoder;
+
+    private final UserRepository userRepository;
 
     public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
 
@@ -76,6 +82,18 @@ public class SecurityUtil {
 
     public long getRefreshTokenExpiration() {
         return refreshTokenExpiration;
+    }
+
+    public User getCurrentUser(){
+        String email =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getName();
+
+        return userRepository
+                .findByEmail(email)
+                .orElseThrow();
     }
 
 }
