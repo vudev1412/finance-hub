@@ -8,9 +8,17 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring", uses = {CategoryMapper.class})
 public interface TransactionMapper {
 
-    @Mapping(source = "category", target = "category")
-    @Mapping(source = "category.type", target = "type")
-    TransactionResponse toResponse(Transaction transaction);
+    @Mapping(
+            target = "categoryId",
+            source = "category.id"
+    )
+    @Mapping(
+            target = "categoryName",
+            source = "category.name"
+    )
+    TransactionResponse toResponse(
+            Transaction transaction
+    );
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "user", ignore = true)

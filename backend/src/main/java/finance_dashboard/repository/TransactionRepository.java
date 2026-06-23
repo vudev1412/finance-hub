@@ -42,4 +42,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, UUID> 
             @Param("year") int year);
 
     Optional<Transaction> findByIdAndUserId(UUID id, UUID userId);
+
+    List<Transaction> findByUserIdAndCategoryIdOrderByTransactionDateDesc(
+            UUID userId, UUID categoryId);
 }

@@ -15,5 +15,6 @@ public class TransactionResponse {
     private String note;
     private LocalDate transactionDate;
     private TransactionType type;
-    private CategoryResponse category;
+    UUID categoryId;
+    private String categoryName;
 }

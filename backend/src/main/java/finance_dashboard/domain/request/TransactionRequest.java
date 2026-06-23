@@ -1,5 +1,6 @@
 package finance_dashboard.domain.request;
 
+import finance_dashboard.domain.entity.enums.TransactionType;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -18,6 +19,7 @@ public class TransactionRequest {
     private BigDecimal amount;
 
     private String note;
+    private TransactionType type;
     private LocalDate transactionDate;
 
     @NotNull(message = "Category is required")
