@@ -1,18 +1,22 @@
 package finance_dashboard.controller;
 
 import finance_dashboard.domain.entity.enums.TransactionType;
+import finance_dashboard.domain.request.TransactionFilterRequest;
 import finance_dashboard.domain.request.TransactionRequest;
 import finance_dashboard.domain.response.ApiResponse;
+import finance_dashboard.domain.response.PageResponse;
 import finance_dashboard.domain.response.TransactionResponse;
 import finance_dashboard.service.TransactionService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -75,5 +79,32 @@ public class TransactionController {
 
         transactionService.delete(id);
         return ResponseEntity.ok(ApiResponse.success("Transaction deleted", null));
+    }
+    @GetMapping("/filter")
+    public ResponseEntity<ApiResponse<PageResponse<TransactionResponse>>> filter(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate fromDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate toDate,
+            @RequestParam(required = false) TransactionType type,
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "transactionDate") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDir) {
+
+        TransactionFilterRequest filter = TransactionFilterRequest.builder()
+                .fromDate(fromDate)
+                .toDate(toDate)
+                .type(type)
+                .page(page)
+                .size(size)
+                .sortBy(sortBy)
+                .sortDir(sortDir)
+                .build();
+
+        return ResponseEntity.ok(ApiResponse.success(
+                transactionService.filter(filter)));
     }
 }

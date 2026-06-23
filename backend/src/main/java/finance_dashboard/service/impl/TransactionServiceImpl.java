@@ -5,15 +5,27 @@ import finance_dashboard.domain.entity.Transaction;
 import finance_dashboard.domain.entity.User;
 import finance_dashboard.domain.entity.enums.TransactionType;
 import finance_dashboard.domain.mapper.TransactionMapper;
+import finance_dashboard.domain.request.TransactionFilterRequest;
 import finance_dashboard.domain.request.TransactionRequest;
+import finance_dashboard.domain.response.PageResponse;
 import finance_dashboard.domain.response.TransactionResponse;
+import finance_dashboard.exception.AppException;
 import finance_dashboard.repository.CategoryRepository;
 import finance_dashboard.repository.TransactionRepository;
 import finance_dashboard.service.TransactionService;
+import finance_dashboard.specification.TransactionSpecification;
 import finance_dashboard.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,6 +57,48 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionMapper.toResponse(transaction);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<TransactionResponse> filter(TransactionFilterRequest filter) {
+        User currentUser = securityUtil.getCurrentUser();
+        // Build Sort
+        Sort.Direction direction = filter.getSortDir().equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        String sortField = resolveSortField(filter.getSortBy());
+        Pageable pageable = PageRequest.of(filter.getPage(), filter.getSize(),
+                Sort.by(direction, sortField));
+
+        // Build Specification
+        Specification<Transaction> spec =
+                TransactionSpecification.filter(filter, currentUser.getId());
+
+        // Query
+        Page<Transaction> page = transactionRepository.findAll(spec, pageable);
+
+        List<TransactionResponse> content = page.getContent()
+                .stream()
+                .map(transactionMapper::toResponse)
+                .collect(Collectors.toList());
+
+        return PageResponse.<TransactionResponse>builder()
+                .content(content)
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .last(page.isLast())
+                .build();
+    }
+    // Whitelist sort fields — tránh SQL injection qua sortBy param
+    private String resolveSortField(String sortBy) {
+        return switch (sortBy) {
+            case "amount" -> "amount";
+            case "title" -> "title";
+            default -> "transactionDate";
+        };
+    }
     @Override
     public List<TransactionResponse> getAll() {
         User currentUser = securityUtil.getCurrentUser();
